@@ -2,7 +2,7 @@ import * as React from "react";
 import { ethers } from "ethers";
 import abi from "./utils/WavePortal.json";
 const contractABI = abi.abi;
-const contractAddress = "0x97AFe210b4615CbaD7563008179E512078651171";
+const contractAddress = "0xceB6Db65dCF69418b5Dbd1B6bF62921cee0aae5d";
 function App() {
   const [totalWaves, setTotalWaves] = React.useState(0);
   const [currentAccount, setCurrentAccount] = React.useState("");
@@ -22,14 +22,13 @@ function App() {
           contractABI,
           signer
         );
-        const waveTxn = await wavePortalContract.wave(message);
+        const waveTxn = await wavePortalContract.wave(message, {
+          gasLimit: 300000,
+        });
         setMessage("");
-        console.log("Mining...", waveTxn.hash);
         await waveTxn.wait();
-        console.log("Mined -- ", waveTxn.hash);
         let count = await wavePortalContract.getTotalWaves();
         setTotalWaves(count.toNumber());
-        console.log("Retrieved total wave count...", count.toNumber());
       } else {
         console.log("Ethereum object doesn't exist!");
       }
@@ -51,7 +50,6 @@ function App() {
       );
       const waves = await wavePortalContract.getAllWaves();
       setIsLoading(false);
-      console.log({ waves });
       setWaves(waves);
     }
   };
@@ -63,6 +61,33 @@ function App() {
   React.useEffect(() => {
     checkIfWalletIsConnected();
   }, [currentAccount]);
+
+  useEffect(() => {
+    let wavePortalContract;
+
+    const onNewWave = (from, timestamp, message) => {
+      console.log("NewWave", from, timestamp, message);
+      getAllWaves();
+    };
+
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      wavePortalContract = new ethers.Contract(
+        contractAddress,
+        contractABI,
+        signer
+      );
+      wavePortalContract.on("NewWave", onNewWave);
+    }
+
+    return () => {
+      if (wavePortalContract) {
+        wavePortalContract.off("NewWave", onNewWave);
+      }
+    };
+  }, []);
 
   const checkIfWalletIsConnected = async () => {
     try {
@@ -81,16 +106,13 @@ function App() {
           signer
         );
         let count = await wavePortalContract.getTotalWaves();
-        console.log("Retrieved total wave count...", count.toNumber());
         setTotalWaves(count.toNumber());
-        console.log("We have the ethereum object", ethereum);
         /*
          * Check if we're authorized to access the user's wallet
          */
         const accounts = await ethereum.request({ method: "eth_accounts" });
         if (accounts.length !== 0) {
           const account = accounts[0];
-          console.log("Found an authorized account:", account);
           setCurrentAccount(account);
         } else {
           console.log("No authorized account found");
@@ -114,7 +136,6 @@ function App() {
         method: "eth_requestAccounts",
       });
       setIsLoading(false);
-      console.log("Connected", accounts[0]);
       setCurrentAccount(accounts[0]);
     } catch (error) {
       console.log(error);
@@ -155,10 +176,14 @@ function App() {
           I am a software engineer and I love building things that live on the
           internet. This is my first web3 app!
         </div>
-        <span>
-          Currently {totalWaves} person{totalWaves === 1 ? "" : "s"} have waved
-          at me. Join them
-        </span>
+        {currentAccount ? (
+          <span>
+            Currently {totalWaves} person{totalWaves === 1 ? "" : "s"} have
+            waved at me.
+          </span>
+        ) : (
+          ""
+        )}
         {!currentAccount ? (
           <button
             className="px-[6px] py-[4px] border rounded-md border-gray-400"
@@ -183,15 +208,19 @@ function App() {
               Wave at Me
             </button>
             <div className="flex flex-col mt-[64px]  max-w-[900px] w-full px-[20px] border rounded-md border-gray-400">
-              <div
-                className={`flex justify-between 
+              {currentAccount ? (
+                <div
+                  className={`flex justify-between 
                   p-[8px] border-gray-400 w-full`}
-              >
-                <div className="font-semibold overflow-hidden text-ellipsis">
-                  User
+                >
+                  <div className="font-semibold overflow-hidden text-ellipsis">
+                    User
+                  </div>
+                  <div className="self-start font-semibold ">Message</div>
                 </div>
-                <div className="self-start font-semibold ">Message</div>
-              </div>
+              ) : (
+                ""
+              )}
               {waves?.map((wave, index) => (
                 <div
                   key={index}
