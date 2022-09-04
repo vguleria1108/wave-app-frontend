@@ -3,6 +3,24 @@ import { ethers } from "ethers";
 
 function App() {
   const wave = () => {};
+
+  const checkIfWalletIsConnected = () => {
+    /*
+     * First make sure we have access to window.ethereum
+     */
+    const { ethereum } = window;
+
+    if (!ethereum) {
+      alert("Please install metamask!");
+    } else {
+      console.log("We have the ethereum object", ethereum);
+    }
+  };
+
+  React.useEffect(() => {
+    checkIfWalletIsConnected();
+  });
+
   return (
     <div className="flex flex-col p-[20px] mt-[20px] items-center gap-[20px]">
       <div className="font-semibold text-3xl">👋 Hey there!</div>
