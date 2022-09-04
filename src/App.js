@@ -62,7 +62,7 @@ function App() {
     checkIfWalletIsConnected();
   }, [currentAccount]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     let wavePortalContract;
 
     const onNewWave = (from, timestamp, message) => {
