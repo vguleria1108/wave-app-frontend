@@ -22,6 +22,12 @@ function App() {
           contractABI,
           signer
         );
+        // check if connected network is correct
+        const network = await provider.getNetwork();
+        if (network.chainId !== 4) {
+          alert("Please connect to Rinkeby Test Network");
+          return;
+        }
         const waveTxn = await wavePortalContract.wave(message, {
           gasLimit: 300000,
         });
