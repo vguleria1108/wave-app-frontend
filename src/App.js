@@ -54,6 +54,21 @@ function App() {
     }
   };
 
+  const getTotalWaves = async () => {
+    const { ethereum } = window;
+    if (ethereum) {
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      const signer = provider.getSigner();
+      const wavePortalContract = new ethers.Contract(
+        contractAddress,
+        contractABI,
+        signer
+      );
+      const count = await wavePortalContract.getTotalWaves();
+      setTotalWaves(count.toNumber());
+    }
+  };
+
   React.useEffect(() => {
     getAllWaves();
   }, [totalWaves]);
@@ -67,7 +82,7 @@ function App() {
 
     const onNewWave = (from, timestamp, message) => {
       console.log("NewWave", from, timestamp, message);
-      getAllWaves();
+      getTotalWaves();
     };
 
     if (window.ethereum) {
