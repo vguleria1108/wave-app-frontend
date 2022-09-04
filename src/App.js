@@ -113,24 +113,35 @@ function App() {
       if (!ethereum) {
         alert("Please install metamask!");
       } else {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const wavePortalContract = new ethers.Contract(
-          contractAddress,
-          contractABI,
-          signer
-        );
-        let count = await wavePortalContract.getTotalWaves();
-        setTotalWaves(count.toNumber());
-        /*
-         * Check if we're authorized to access the user's wallet
-         */
-        const accounts = await ethereum.request({ method: "eth_accounts" });
-        if (accounts.length !== 0) {
-          const account = accounts[0];
-          setCurrentAccount(account);
+        // check if network is Rinkeby testnet
+        const network = await ethereum.request({
+          method: "net_version",
+        });
+        if (network !== "4") {
+          ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: "0x4" }],
+          });
         } else {
-          console.log("No authorized account found");
+          const provider = new ethers.providers.Web3Provider(ethereum);
+          const signer = provider.getSigner();
+          const wavePortalContract = new ethers.Contract(
+            contractAddress,
+            contractABI,
+            signer
+          );
+          let count = await wavePortalContract.getTotalWaves();
+          setTotalWaves(count.toNumber());
+          /*
+           * Check if we're authorized to access the user's wallet
+           */
+          const accounts = await ethereum.request({ method: "eth_accounts" });
+          if (accounts.length !== 0) {
+            const account = accounts[0];
+            setCurrentAccount(account);
+          } else {
+            console.log("No authorized account found");
+          }
         }
       }
     } catch (error) {
