@@ -2,7 +2,7 @@ import * as React from "react";
 import { ethers } from "ethers";
 import abi from "./utils/WavePortal.json";
 const contractABI = abi.abi;
-const contractAddress = "0xae0E6c479f39BBbF0D746873d4Cf921eEBfb10A9";
+const contractAddress = "0x97AFe210b4615CbaD7563008179E512078651171";
 function App() {
   const [totalWaves, setTotalWaves] = React.useState(0);
   const [currentAccount, setCurrentAccount] = React.useState("");
