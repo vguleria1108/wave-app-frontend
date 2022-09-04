@@ -16,7 +16,11 @@ function App() {
           contractABI,
           signer
         );
+        const waveTxn = await wavePortalContract.wave();
+        console.log("Mining...", waveTxn.hash);
 
+        await waveTxn.wait();
+        console.log("Mined -- ", waveTxn.hash);
         let count = await wavePortalContract.getTotalWaves();
         console.log("Retrieved total wave count...", count.toNumber());
       } else {
@@ -38,6 +42,15 @@ function App() {
       if (!ethereum) {
         alert("Please install metamask!");
       } else {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const wavePortalContract = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
+        let count = await wavePortalContract.getTotalWaves();
+        console.log("Retrieved total wave count...", count.toNumber());
         console.log("We have the ethereum object", ethereum);
         /*
          * Check if we're authorized to access the user's wallet
